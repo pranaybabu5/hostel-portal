@@ -1,0 +1,46 @@
+{{extend 'layout.html'}}
+{{=BEAUTIFY(dfform)}}
+<br/><br/>
+<h2>
+    Comments :
+</h2>
+
+<div class="form-horizontal">
+
+<div class="container" style="width:100%;">
+<table>
+{{for row in comments : }}
+        <tr>
+            <td>
+                {{=A(row.auth_user.first_name +' ' +row.auth_user.last_name,_href=URL("user","profile",vars=dict(userid=row.auth_user.id)))}}
+            </td>
+            <td>
+                <div class="Area"> 
+                    <div class="text1 R textR">
+                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{=B(row.DISCUSSION_FORUMS_COMMENTS.REPLY)}}    
+                    </div></div>
+            </td>
+        </tr>
+        <tr>
+            <td>
+                
+            </td>
+            <td>
+                {{=row.DISCUSSION_FORUMS_COMMENTS.CREATED_ON}}    
+            </td>
+        
+        </tr>
+    <tr>
+         <td>
+                &nbsp;
+         </td>
+         <td>
+                
+         </td>
+        
+    </tr>
+{{pass}}
+</table>    
+    </div>
+</div>
+{{=BEAUTIFY(form)}}

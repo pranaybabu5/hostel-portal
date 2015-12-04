@@ -1,0 +1,13 @@
+{{extend 'layout.html'}}
+{{=BEAUTIFY(form)}}
+    <h1>
+            Complaints Logged by me
+    </h1>
+<br/><br/><br/>
+{{=BEAUTIFY(grid1)}}
+{{ if gridall != None :}}
+    <h1>
+            All Complaints
+    </h1>
+    {{=BEAUTIFY(gridall)}}
+{{pass}}

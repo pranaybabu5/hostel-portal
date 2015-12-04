@@ -1,0 +1,48 @@
+{{extend 'layout.html'}}
+{{=BEAUTIFY(form)}}
+<h2>
+    Messages :
+</h2>
+<table border="0" width="100%">
+{{for row in rows : }}
+        <tr width="100%">
+            <td width="100%">
+            {{ if (row.SENDER == login_id) : }}
+                 <div class="Area">
+                     {{=A(send_name,_href=URL("student","profile",vars=dict(userid=send_id)))}} {{=row.CREATED_ON}}
+                 <div class="text1 R textR"> {{=row.MESSAGE_DETAIL}}
+                </div>
+                 </div>
+                {{else:}}
+                <div class="Area"> 
+                <div class="text1 L textL">  {{=row.MESSAGE_DETAIL}}
+                </div>
+                    {{=A(receive_name,_href=URL("user","profile",vars=dict(userid=receive_id)))}}
+                    {{=row.CREATED_ON}}
+                </div>
+                 {{pass}}    
+            </td>
+        </tr>
+            <td>
+                &nbsp;
+            </td>
+        </tr>
+{{pass}}
+</table>
+<!--    
+<div class="container">
+    {{for row in rows : }} 
+    {{ if (row.SENDER == login_id) : }}
+    <div class="Area"> 
+    <div class="text1 L textL">{{=A(send_name,_href=URL("user","profile",vars=dict(userid=send_id)))}} <br/>
+         {{=row.MESSAGE_DETAIL}}
+    </div>
+    </div>
+        {{else:}}
+    <div class="Area">
+         <div class="text1 R textR">{{=A(receive_name,_href=URL("user","profile",vars=dict(userid=receive_id)))}} <br/>  {{=row.MESSAGE_DETAIL}}
+        </div>
+     </div>
+        {{pass}}
+    {{pass}}
+</div>-->

@@ -1,0 +1,147 @@
+# -*- coding: utf-8 -*-
+
+#########################################################################
+## This scaffolding model makes your app work on Google App Engine too
+## File is released under public domain and you can use without limitations
+#########################################################################
+
+## if SSL/HTTPS is properly configured and you want all HTTP requests to
+## be redirected to HTTPS, uncomment the line below:
+# request.requires_https()
+
+## app configuration made easy. Look inside private/appconfig.ini
+from gluon.contrib.appconfig import AppConfig
+## once in production, remove reload=True to gain full speed
+myconf = AppConfig(reload=True)
+
+
+if not request.env.web2py_runtime_gae:
+    ## if NOT running on Google App Engine use SQLite or other DB
+    db = DAL(myconf.take('db.uri'), pool_size=myconf.take('db.pool_size', cast=int), check_reserved=['all'])
+else:
+    ## connect to Google BigTable (optional 'google:datastore://namespace')
+    db = DAL('google:datastore+ndb')
+    ## store sessions and tickets there
+    session.connect(request, response, db=db)
+    ## or store session in Memcache, Redis, etc.
+    ## from gluon.contrib.memdb import MEMDB
+    ## from google.appengine.api.memcache import Client
+    ## session.connect(request, response, db = MEMDB(Client()))
+
+## by default give a view/generic.extension to all actions from localhost
+## none otherwise. a pattern can be 'controller/function.extension'
+response.generic_patterns = ['*'] if request.is_local else []
+## choose a style for forms
+response.formstyle = myconf.take('forms.formstyle')  # or 'bootstrap3_stacked' or 'bootstrap2' or other
+response.form_label_separator = myconf.take('forms.separator')
+
+
+## (optional) optimize handling of static files
+# response.optimize_css = 'concat,minify,inline'
+# response.optimize_js = 'concat,minify,inline'
+## (optional) static assets folder versioning
+# response.static_version = '0.0.0'
+#########################################################################
+## Here is sample code if you need for
+## - email capabilities
+## - authentication (registration, login, logout, ... )
+## - authorization (role based authorization)
+## - services (xml, csv, json, xmlrpc, jsonrpc, amf, rss)
+## - old style crud actions
+## (more options discussed in gluon/tools.py)
+#########################################################################
+
+from gluon.tools import Auth, Service, PluginManager
+
+auth = Auth(db)
+service = Service()
+plugins = PluginManager()
+
+## create all tables needed by auth if not custom tables
+auth.define_tables(username=False, signature=False)
+
+## configure email
+mail = auth.settings.mailer
+mail.settings.server = 'logging' if request.is_local else myconf.take('smtp.server')
+mail.settings.sender = myconf.take('smtp.sender')
+mail.settings.login = myconf.take('smtp.login')
+
+## configure auth policy
+auth.settings.registration_requires_verification = False
+auth.settings.registration_requires_approval = False
+auth.settings.reset_password_requires_verification = True
+
+#########################################################################
+## Define your tables below (or better in another model file) for example
+##
+## >>> db.define_table('mytable',Field('myfield','string'))
+##
+## Fields can be 'string','text','password','integer','double','boolean'
+##       'date','time','datetime','blob','upload', 'reference TABLENAME'
+## There is an implicit 'id integer autoincrement' field
+## Consult manual for more options, validators, etc.
+##
+## More API examples for controllers:
+##
+## >>> db.mytable.insert(myfield='value')
+## >>> rows=db(db.mytable.myfield=='value').select(db.mytable.ALL)
+## >>> for row in rows: print row.id, row.myfield
+#########################################################################
+
+## after defining tables, uncomment below to enable auditing
+# auth.enable_record_versioning(db)
+
+db.define_table('HOSTEL_ADMIN',
+                db.Field('USER_ID', 'reference auth_user',required=True),
+                db.Field('HOSTEL_ID','integer',required=True),
+                db.Field('DESIGNATION','string',required=True),
+               plural="Hostel Admins")
+
+
+
+db.define_table('USER_PROFILE',
+                db.Field('USER_ID', 'reference auth_user', default=auth.user_id),
+                db.Field('ROLL_NUMBER','string', length=9),
+                db.Field('PHONE','string', length=10),
+                db.Field('ROOM_NUMBER','string', length=10),
+                db.Field('HOME_ADDRESS', 'text', default=''),
+                db.Field('ALLERGY','string', length=50),
+                db.Field('DATE_OF_BIRTH', 'date'),
+                db.Field('BLOOD_GROUP', 'string'),
+               plural="Users")
+
+db.define_table('DISCUSSION_FORUMS',
+                db.Field('TITLE', 'string', length=50, required=True,requires=IS_NOT_EMPTY()),
+                db.Field('DESCRIPTION', 'text', required=True, default='',requires=IS_NOT_EMPTY()),
+                db.Field('IS_ACTIVE', 'boolean', required=True, default=True,writable=False, readable=False),
+                db.Field('CREATED_ON', 'datetime', required=True,default=request.now,writable=False),
+                db.Field('CREATED_BY', 'reference auth_user', default=auth.user_id,writable=False),
+               plural="Discussion Forums")
+
+db.define_table('DISCUSSION_FORUMS_COMMENTS',
+                db.Field('DF_ID','reference DISCUSSION_FORUMS', default=db.DISCUSSION_FORUMS.id, writable=False,readable=False),
+                db.Field('REPLY','text', required=True, default='',requires=IS_NOT_EMPTY()),
+                db.Field('CREATED_ON', 'datetime', required=True,default=request.now,writable=False, readable=False),
+                db.Field('CREATED_BY','reference auth_user', default=auth.user_id,writable=False, readable=False),
+               plural="Discussion Forum Comments")
+
+
+db.define_table('IM_MESSAGE',
+                db.Field('SENDER', 'reference auth_user', default=auth.user_id,writable=False),
+                db.Field('RECEIVER', 'reference auth_user',notnull=True),
+                db.Field('MESSAGE_DETAIL','text', required=True, default='',requires=IS_NOT_EMPTY()),
+                db.Field('CREATED_ON', 'datetime', required=True,default=request.now,writable=False, readable=False),
+                db.Field('SEEN', 'boolean', required=True, default=False, readable=False),
+               plural="Messages")
+
+
+
+db.define_table('COMPLAINT',
+                db.Field('CREATED_BY', 'reference auth_user', default=auth.user_id,writable=False),
+                db.Field('CREATED_ON', 'datetime', required=True,default=request.now,writable=False, readable=False),
+                db.Field('COMPLAINT_TYPE', 'string',required=True,requires=IS_NOT_EMPTY()),
+                db.Field('YOUR_COMPLAINT','text', required=True, default='',requires=IS_NOT_EMPTY()),
+                db.Field('AVALIABLE_SLOT_FROM', 'string',required=True),
+                db.Field('AVALIABLE_SLOT_TO', 'string',required=True),
+               plural="Complaints")
+T.force('ru-ru')

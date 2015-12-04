@@ -1,0 +1,7 @@
+{{extend 'layout3.html'}}
+{{=BEAUTIFY(grid2)}}
+                <h5 style="font-weight:bold">AMBULANCE SERVICE:</h5>
+                Name: Shri Umapathy
+<br />
+                Mobile No.: 9676477748
+</p>
